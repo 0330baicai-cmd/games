@@ -17,7 +17,8 @@
      background:linear-gradient(90deg,#8be9ff,#b39dff 60%,#ff9ad2);
      -webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
   .sub{margin-top:10px;color:#8fa7c8;font-size:14px;letter-spacing:.04em}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;margin-top:28px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;margin-top:28px;align-items:start}
+  .cell{display:flex;flex-direction:column;gap:10px}
   a.card{
     display:block;text-decoration:none;color:inherit;border-radius:16px;overflow:hidden;
     background:rgba(18,30,52,.72);border:1px solid rgba(120,180,255,.18);
@@ -33,6 +34,29 @@
   .meta p{margin-top:6px;font-size:12.5px;line-height:1.6;color:#93a9c8}
   .tag{display:inline-block;margin-top:10px;font-size:11px;padding:3px 9px;border-radius:999px;
     border:1px solid rgba(140,220,255,.35);color:#a9dcff;background:rgba(120,200,255,.08)}
+
+  /* ---- 版本更新折叠栏 ---- */
+  details.changelog{
+    border:1px solid rgba(120,180,255,.18);border-radius:14px;overflow:hidden;
+    background:rgba(12,22,40,.66);transition:border-color .18s ease;
+  }
+  details.changelog[open]{border-color:rgba(140,220,255,.45)}
+  details.changelog summary{
+    cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;
+    padding:11px 14px;font-size:13px;font-weight:600;color:#bfe8ff;letter-spacing:.04em;
+  }
+  details.changelog summary::-webkit-details-marker{display:none}
+  .ver{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;
+    background:rgba(120,200,255,.14);border:1px solid rgba(140,220,255,.38);color:#d6efff}
+  .chev{margin-left:auto;font-size:11px;color:#7fa8d8;transition:transform .2s ease}
+  details.changelog[open] .chev{transform:rotate(180deg)}
+  .notes{padding:2px 16px 14px;font-size:12px;line-height:1.85;color:#93a9c8}
+  .notes .grp{margin-top:10px;color:#cfe0f6;font-size:11.5px;letter-spacing:.06em;opacity:.85}
+  .notes ul{margin:4px 0 0 2px;list-style:none}
+  .notes li{position:relative;padding-left:13px}
+  .notes li::before{content:"-";position:absolute;left:0;color:#5f88b8}
+  .notes em{font-style:normal;color:#8be9ff}
+
   .empty{margin-top:28px;padding:28px;border-radius:16px;text-align:center;color:#7f96b8;
     border:1px dashed rgba(120,180,255,.25);font-size:13px}
   footer{margin-top:44px;color:#5f7391;font-size:12px;line-height:1.9}
@@ -47,14 +71,62 @@
   </header>
 
   <div class="grid">
-    <a class="card" href="arena-smash/">
-      <div class="cover" style="background-image:url(arena-smash/cover.png)"></div>
-      <div class="meta">
-        <b>圆环大乱斗 · Arena Smash</b>
-        <p>3D 圆形擂台对战，100% 起有概率一击打飞出局。12 个角色、3 个技能、大招充能。</p>
-        <span class="tag">3D 对战 · 单人/同屏双人/观战</span>
-      </div>
-    </a>
+    <div class="cell">
+      <a class="card" href="arena-smash/">
+        <div class="cover" style="background-image:url(arena-smash/cover.png)"></div>
+        <div class="meta">
+          <b>圆环大乱斗 · Arena Smash</b>
+          <p>3D 圆形擂台对战，100% 起有概率一击打飞出局。12 个角色、6 种武器、双摇杆瞄准、大招充能。</p>
+          <span class="tag">3D 对战 · 单人 / 同屏双人</span>
+        </div>
+      </a>
+
+      <details class="changelog">
+        <summary>版本更新 <span class="ver">v0.2</span><span class="chev">▾</span></summary>
+        <div class="notes">
+          <div class="grp">武器系统（新增）</div>
+          <ul>
+            <li>选完角色后新增<em>武器选择</em>：空手 / 水枪 / 短霰弹枪 / 火焰喷射器 / 小刀 / 火箭筒</li>
+            <li>手机新增<em>右手瞄准摇杆</em>，拖动即显示攻击区域投影；按住前 0.5 秒只瞄准不开火</li>
+            <li>攻击区域按武器形状显示：霰弹枪=梯形，火焰=锥形，刀/空手=扇形，枪械=细长条</li>
+            <li>选了武器后不再有普通攻击 / 重击按钮</li>
+            <li>武器挂在角色右手骨骼上，会跟着跑动与出招摆动</li>
+          </ul>
+
+          <div class="grp">平衡调整</div>
+          <ul>
+            <li>水枪攻击间隔 <em>0.20s → 0.167s</em>（×1.2），命中减速到 75% 并持续 0.2s（蓝色粒子）</li>
+            <li>霰弹枪 <em>6 发随机 → 12 发均匀扇形</em>，每发 3 点击飞值</li>
+            <li>火箭筒改用导弹模型，弹体加宽，爆炸半径 <em>2.4 → 3.0</em></li>
+            <li>火焰喷射器命中<em>不再击飞</em>，改为附加灼烧：1.5s 内每 0.5s +2% 击飞值（红色粒子）</li>
+            <li>AI 移动速度 <em>100% → 90%</em>，出招有 5% 概率挥空</li>
+            <li>AI 走位加入随机绕行，不再笔直冲向玩家，改用 45%~80% 速度缓慢压上</li>
+          </ul>
+
+          <div class="grp">规则与界面</div>
+          <ul>
+            <li>击飞规则改为 <em>100% 起每一下有 10% 概率直接打飞出局</em>，每多 10% 击飞值 +5% 概率</li>
+            <li>选人界面只显示玩家自己的角色，AI 在开局时<em>随机角色 + 随机武器</em></li>
+            <li>新增<em>中 / 英双语</em>切换（首页与菜单右上角）</li>
+            <li>新增命中顿帧、大招霸体（放大会不会被普通攻击打断）</li>
+            <li>删除「电脑观战」模式；默认竖屏进入，局内可随时切横屏</li>
+          </ul>
+
+          <div class="grp">修复</div>
+          <ul>
+            <li>修复顿帧时飞行中的子弹被直接销毁的问题（导致霰弹枪 12 发只结算 1 发）</li>
+            <li>修复角色换模型后武器不跟随、位置错乱的问题</li>
+          </ul>
+
+          <div class="grp">v0.1 初版</div>
+          <ul>
+            <li>3D 圆形擂台、击飞值、3 条命、栏杆可被打穿</li>
+            <li>12 个角色、3 个技能 + 打人充能的大招</li>
+            <li>开场动画、模式选择、角色选择、结算界面</li>
+          </ul>
+        </div>
+      </details>
+    </div>
   </div>
 
   <div class="empty">以后做的新游戏，加一个文件夹 + 上面这样一张卡片就行</div>
