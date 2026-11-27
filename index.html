@@ -35,23 +35,38 @@
   .tag{display:inline-block;margin-top:10px;font-size:11px;padding:3px 9px;border-radius:999px;
     border:1px solid rgba(140,220,255,.35);color:#a9dcff;background:rgba(120,200,255,.08)}
 
-  /* ---- 版本更新折叠栏 ---- */
+  /* ---- 版本更新折叠栏（外层 = 最新版，内层 = 每个小版本） ---- */
   details.changelog{
     border:1px solid rgba(120,180,255,.18);border-radius:14px;overflow:hidden;
     background:rgba(12,22,40,.66);transition:border-color .18s ease;
   }
   details.changelog[open]{border-color:rgba(140,220,255,.45)}
-  details.changelog summary{
+  details.changelog > summary{
     cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;
     padding:11px 14px;font-size:13px;font-weight:600;color:#bfe8ff;letter-spacing:.04em;
   }
-  details.changelog summary::-webkit-details-marker{display:none}
+  details.changelog > summary::-webkit-details-marker{display:none}
   .ver{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;
     background:rgba(120,200,255,.14);border:1px solid rgba(140,220,255,.38);color:#d6efff}
   .chev{margin-left:auto;font-size:11px;color:#7fa8d8;transition:transform .2s ease}
-  details.changelog[open] .chev{transform:rotate(180deg)}
-  .notes{padding:2px 16px 14px;font-size:12px;line-height:1.85;color:#93a9c8}
-  .notes .grp{margin-top:10px;color:#cfe0f6;font-size:11.5px;letter-spacing:.06em;opacity:.85}
+  details[open] > summary .chev{transform:rotate(180deg)}
+  .body{padding:0 12px 12px}
+
+  details.sub{
+    margin-top:8px;border:1px solid rgba(120,180,255,.14);border-radius:11px;
+    background:rgba(8,14,26,.55);overflow:hidden;
+  }
+  details.sub > summary{
+    cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;
+    padding:9px 12px;font-size:12.5px;color:#bcd6f2;
+  }
+  details.sub > summary::-webkit-details-marker{display:none}
+  details.sub[open]{border-color:rgba(140,220,255,.34)}
+  .vb{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;
+    background:rgba(120,200,255,.12);border:1px solid rgba(140,220,255,.3);color:#cfe9ff}
+  .latest{font-size:10.5px;color:#8be9ff;letter-spacing:.08em}
+  .notes{padding:0 12px 12px;font-size:12px;line-height:1.8;color:#93a9c8}
+  .notes .grp{margin-top:8px;color:#cfe0f6;font-size:11.5px;letter-spacing:.06em;opacity:.85}
   .notes ul{margin:4px 0 0 2px;list-style:none}
   .notes li{position:relative;padding-left:13px}
   .notes li::before{content:"-";position:absolute;left:0;color:#5f88b8}
@@ -76,54 +91,67 @@
         <div class="cover" style="background-image:url(arena-smash/cover.png)"></div>
         <div class="meta">
           <b>圆环大乱斗 · Arena Smash</b>
-          <p>3D 圆形擂台对战，100% 起有概率一击打飞出局。12 个角色、6 种武器、双摇杆瞄准、大招充能。</p>
+          <p>3D 圆形擂台对战，100% 起有概率一击打飞出局。12 个角色、7 种武器（含隐藏）、双摇杆瞄准、大招充能。</p>
           <span class="tag">3D 对战 · 单人 / 同屏双人</span>
         </div>
       </a>
 
       <details class="changelog">
-        <summary>版本更新 <span class="ver">v0.2</span><span class="chev">▾</span></summary>
-        <div class="notes">
-          <div class="grp">武器系统（新增）</div>
-          <ul>
-            <li>选完角色后新增<em>武器选择</em>：空手 / 水枪 / 短霰弹枪 / 火焰喷射器 / 小刀 / 火箭筒</li>
-            <li>手机新增<em>右手瞄准摇杆</em>，拖动即显示攻击区域投影；按住前 0.5 秒只瞄准不开火</li>
-            <li>攻击区域按武器形状显示：霰弹枪=梯形，火焰=锥形，刀/空手=扇形，枪械=细长条</li>
-            <li>选了武器后不再有普通攻击 / 重击按钮</li>
-            <li>武器挂在角色右手骨骼上，会跟着跑动与出招摆动</li>
-          </ul>
+        <summary>版本更新 <span class="ver">v0.3</span><span class="chev">▾</span></summary>
+        <div class="body">
 
-          <div class="grp">平衡调整</div>
-          <ul>
-            <li>水枪攻击间隔 <em>0.20s → 0.167s</em>（×1.2），命中减速到 75% 并持续 0.2s（蓝色粒子）</li>
-            <li>霰弹枪 <em>6 发随机 → 12 发均匀扇形</em>，每发 3 点击飞值</li>
-            <li>火箭筒改用导弹模型，弹体加宽，爆炸半径 <em>2.4 → 3.0</em></li>
-            <li>火焰喷射器命中<em>不再击飞</em>，改为附加灼烧：1.5s 内每 0.5s +2% 击飞值（红色粒子）</li>
-            <li>AI 移动速度 <em>100% → 90%</em>，出招有 5% 概率挥空</li>
-            <li>AI 走位加入随机绕行，不再笔直冲向玩家，改用 45%~80% 速度缓慢压上</li>
-          </ul>
+          <details class="sub" open>
+            <summary><span class="vb">v0.3</span><span class="latest">最新</span><span class="chev">▾</span></summary>
+            <div class="notes">
+              <div class="grp">平衡</div>
+              <ul>
+                <li>新增隐藏武器<em>「彩色」</em>：一次 5 颗导弹散射，射速 0.75s，攻击区域为霰弹枪的 <em>2.5 倍</em>（梯形）</li>
+                <li>「彩色」与火箭筒命中附带<em>震荡</em>：目标 0.5 秒内移动方向失控（随机方向乱走），带灰色粒子</li>
+                <li>扫射时 5 颗导弹各自独立结算伤害与爆炸范围</li>
+              </ul>
+              <div class="grp">修复</div>
+              <ul>
+                <li>未解锁的隐藏武器不再出现在武器选择栏</li>
+                <li>在设置里输入兑换码时，按键不再穿透到游戏（不会误触跳跃/技能）</li>
+              </ul>
+            </div>
+          </details>
 
-          <div class="grp">规则与界面</div>
-          <ul>
-            <li>击飞规则改为 <em>100% 起每一下有 10% 概率直接打飞出局</em>，每多 10% 击飞值 +5% 概率</li>
-            <li>选人界面只显示玩家自己的角色，AI 在开局时<em>随机角色 + 随机武器</em></li>
-            <li>新增<em>中 / 英双语</em>切换（首页与菜单右上角）</li>
-            <li>新增命中顿帧、大招霸体（放大会不会被普通攻击打断）</li>
-            <li>删除「电脑观战」模式；默认竖屏进入，局内可随时切横屏</li>
-          </ul>
+          <details class="sub">
+            <summary><span class="vb">v0.2</span><span class="chev">▾</span></summary>
+            <div class="notes">
+              <div class="grp">平衡</div>
+              <ul>
+                <li>水枪攻击间隔 <em>0.20s → 0.167s</em>（×1.2），命中减速到 75% 持续 0.2s</li>
+                <li>霰弹枪 <em>6 发随机 → 12 发均匀扇形</em>，每发 3 点击飞值</li>
+                <li>火箭筒改用导弹模型，弹体加宽，爆炸半径 <em>2.4 → 3.0</em></li>
+                <li>火焰喷射器命中<em>不再击飞</em>，改为灼烧：1.5s 内每 0.5s +2% 击飞值</li>
+                <li>AI 移速 <em>100% → 90%</em>，出招 5% 概率挥空</li>
+                <li>AI 走位加入随机绕行，改用 <em>45%~80%</em> 速度缓慢压上，不再直线冲脸</li>
+                <li>击飞规则：100% 起每一下 10% 概率直接打飞，每多 10% +5%</li>
+              </ul>
+              <div class="grp">修复</div>
+              <ul>
+                <li>修复顿帧时飞行中的子弹被直接销毁的问题（导致霰弹枪 12 发只结算 1 发）</li>
+                <li>修复角色换模型后武器不跟随、位置错乱的问题</li>
+              </ul>
+            </div>
+          </details>
 
-          <div class="grp">修复</div>
-          <ul>
-            <li>修复顿帧时飞行中的子弹被直接销毁的问题（导致霰弹枪 12 发只结算 1 发）</li>
-            <li>修复角色换模型后武器不跟随、位置错乱的问题</li>
-          </ul>
+          <details class="sub">
+            <summary><span class="vb">v0.1</span><span class="chev">▾</span></summary>
+            <div class="notes">
+              <div class="grp">平衡</div>
+              <ul>
+                <li>初版数值：3 条命、100% 击飞阈值、3 个技能 + 打人充能的大招</li>
+              </ul>
+              <div class="grp">修复</div>
+              <ul>
+                <li>无（初版）</li>
+              </ul>
+            </div>
+          </details>
 
-          <div class="grp">v0.1 初版</div>
-          <ul>
-            <li>3D 圆形擂台、击飞值、3 条命、栏杆可被打穿</li>
-            <li>12 个角色、3 个技能 + 打人充能的大招</li>
-            <li>开场动画、模式选择、角色选择、结算界面</li>
-          </ul>
         </div>
       </details>
     </div>
