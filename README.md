@@ -4,8 +4,8 @@
 
 ## 在线地址
 
-- 游戏列表：`https://<你的用户名>.github.io/<仓库名>/`
-- 圆环大乱斗：`https://<你的用户名>.github.io/<仓库名>/arena-smash/`
+- 游戏列表：https://0330baicai-cmd.github.io/games/
+- 圆环大乱斗：https://0330baicai-cmd.github.io/games/arena-smash/
 
 ## 目录结构
 
