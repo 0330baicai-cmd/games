@@ -301,7 +301,7 @@
     font-size:18px;line-height:1;cursor:pointer;z-index:5}
   .gear:hover{border-color:rgba(140,220,255,.7)}
   .settings{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-    background:rgba(4,8,16,.72);z-index:70}
+    background:rgba(4,8,16,.72);z-index:70;pointer-events:auto}
   .settings.on{display:flex}
   .set-card{width:min(92vw,420px);border-radius:16px;padding:18px 20px 20px;
     background:linear-gradient(180deg,rgba(20,32,54,.98),rgba(10,16,30,.98));
@@ -5629,6 +5629,10 @@ function fireWeapon(p,wep,dt){
 /* ================= 输入 ================= */
 W.addEventListener('keydown',function(e){
   if(e.repeat) return;
+  /* 设置面板里打字时不进游戏输入 */
+  var tg=e.target;
+  if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA')) return;
+  if(D.getElementById('settings')&&D.getElementById('settings').classList.contains('on')) return;
   keys[e.code]=true;
   if(e.code==='KeyJ'&&p1) p1.bufLight=0.15;
   if(e.code==='KeyK'&&p1) p1.bufHeavy=0.15;
