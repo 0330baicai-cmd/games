@@ -53,7 +53,7 @@
     background:rgba(255,255,255,.09);color:#eaf2ff;font-size:14px;font-weight:700;pointer-events:auto;touch-action:none;
     display:flex;align-items:center;justify-content:center;letter-spacing:.02em}
   #bJump{right:34px;bottom:150px}
-  #bLight{right:150px;bottom:130px}
+  #bLight{right:150px;bottom:130px;font-size:12px;line-height:1.15;letter-spacing:0}
   #bHeavy{right:150px;bottom:34px}
   #bSkill1{right:256px;bottom:34px}
   #bSkill2{right:256px;bottom:130px}
@@ -150,6 +150,16 @@
   .mode b{display:block;font-size:17px;letter-spacing:.08em}
   .mode span{display:block;font-size:12px;color:#87a0c4;margin-top:6px}
   .menu-foot{margin-top:30px;font-size:12px;color:#7186a6;letter-spacing:.06em}
+  .orient{display:flex;gap:18px;margin-top:28px;flex-wrap:wrap;justify-content:center}
+  .obtn{pointer-events:auto;cursor:pointer;min-width:210px;padding:22px 24px;border-radius:16px;
+    border:1px solid #2b6f95;color:#eaf6ff;text-align:left;transition:.16s;
+    background:linear-gradient(180deg,rgba(30,74,110,.95),rgba(16,34,58,.95))}
+  .obtn:hover{transform:translateY(-3px);border-color:#67c4f0;box-shadow:0 14px 34px rgba(60,170,240,.26)}
+  .obtn b{display:block;font-size:19px;letter-spacing:.1em}
+  .obtn span{display:block;font-size:12px;color:#9fc3e4;margin-top:7px}
+  .obtn.obtn-ghost{background:rgba(12,20,36,.94);border-color:#2f4667;color:#cfe0f6}
+  .obtn.obtn-ghost b{color:#cfe0f6}
+  .obtn.obtn-ghost span{color:#8ba3c2}
   .sel-head{position:absolute;top:5vh;left:0;right:0;text-align:center;font-size:15px;letter-spacing:.1em;color:#cfe6ff}
   .sel-head .picked{margin-top:8px;font-size:12px;color:#89a3c8;letter-spacing:.04em}
   .grid{position:absolute;left:50%;bottom:4vh;transform:translateX(-50%);display:grid;
@@ -276,7 +286,7 @@
   </div>
   <div class="center">
     <div id="timer">3:00</div>
-    <div id="hint">WASD 移动 · 空格 跳跃(二段) · J 轻击 · K 重击</div>
+    <div id="hint">WASD 移动 · 空格 跳跃(二段) · J 普通攻击 · K 重击</div>
   </div>
   <div class="side right">
     <div class="name">P2 · 对手</div>
@@ -290,14 +300,23 @@
 <div id="touch">
   <div id="stick"><div id="knob"></div></div>
   <div class="tbtn" id="bJump">跳</div>
-  <div class="tbtn" id="bLight">轻</div>
-  <div class="tbtn" id="bHeavy">重</div>
+  <div class="tbtn" id="bLight">普通攻击</div>
+  <div class="tbtn" id="bHeavy">重击</div>
   <div class="tbtn" id="bSkill1">冲撞</div>
   <div class="tbtn" id="bSkill2">旋风</div>
   <div class="tbtn" id="bUlt">大招</div>
 </div>
 
 <div id="ui">
+  <section class="screen" id="scr-orient">
+    <div class="menu-h">先选个方向</div>
+    <div class="orient">
+      <button class="obtn" id="btnLand"><b>横屏游玩</b><span>推荐 · 画面更大，按键更好按</span></button>
+      <button class="obtn obtn-ghost" id="btnPort"><b>竖屏游玩</b><span>单手也能玩</span></button>
+    </div>
+    <div class="menu-foot" id="orientTip">选横屏会自动申请全屏并锁定横屏</div>
+  </section>
+
   <section class="screen on" id="scr-intro">
     <div class="beam"></div>
     <div class="intro-title"><span>圆</span><span>环</span><span>大</span><span>乱</span><span>斗</span></div>
@@ -308,7 +327,7 @@
   <section class="screen" id="scr-menu">
     <div class="menu-h">选择模式</div>
     <div class="modes">
-      <button class="mode" data-mode="solo"><b>单人挑战</b><span>你 vs 电脑 · 左键轻击 右键重击 · L冲撞 U旋风 I大招</span></button>
+      <button class="mode" data-mode="solo"><b>单人挑战</b><span>你 vs 电脑 · 左键普通攻击 右键重击 · L冲撞 U旋风 I大招</span></button>
       <button class="mode" data-mode="versus"><b>双人对战</b><span>同一键盘 · P1: WASD+JKL · P2: 方向键 + 逗号 句号</span></button>
       <button class="mode" data-mode="watch"><b>电脑观战</b><span>AI 打 AI，随机角色</span></button>
     </div>
@@ -337,8 +356,13 @@
   </svg>
   <div>请把手机横过来玩</div>
   <div style="font-size:12px;color:#7f96b8">横屏画面更大、按钮更好按</div>
-  <button id="rotSkip" style="margin-top:18px;padding:8px 16px;border-radius:999px;font-size:12px;
-    background:rgba(140,200,255,.10);border:1px solid rgba(140,200,255,.35);color:#b7d8f5">仍要竖屏玩</button>
+  <div style="display:flex;gap:10px;margin-top:18px">
+    <button id="rotLand" style="padding:9px 18px;border-radius:999px;font-size:13px;
+      background:rgba(90,190,255,.24);border:1px solid rgba(120,210,255,.7);color:#eaf7ff">横屏全屏</button>
+    <button id="rotSkip" style="padding:9px 18px;border-radius:999px;font-size:13px;
+      background:rgba(140,200,255,.08);border:1px solid rgba(140,200,255,.3);color:#a9c2dd">竖屏也能玩</button>
+  </div>
+  <div id="rotTip" style="font-size:11px;color:#6f86a8;margin-top:12px;max-width:250px;text-align:center;line-height:1.6"></div>
 </div>
 
 <script>/**
@@ -4505,13 +4529,15 @@ var RUN=9.6, AIR_RUN=7.8, JUMP_V=13.6, JUMP2_V=11.4;
 var SEGMENTS=36, STOCKS=3, MATCH_TIME=180, KO_PERCENT=100;
 
 var MOVES={
-  light:{dur:0.30,active:[0.07,0.16],dmg:5.0,power:6.6,up:0.36,reach:1.05,radius:1.0,charge:6,label:'轻击'},
+  light:{dur:0.30,active:[0.07,0.16],dmg:5.0,power:6.6,up:0.36,reach:1.05,radius:1.0,charge:6,label:'普通攻击'},
   heavy:{dur:0.62,active:[0.20,0.33],dmg:12.0,power:11.0,up:0.62,reach:1.25,radius:1.1,charge:10,label:'重击'},
   s1:{dur:0.34,active:[0.06,0.20],dmg:8.0,power:10.0,up:0.45,reach:1.55,radius:1.05,charge:12,cd:3.6,label:'冲撞',key:'s1'},
   s2:{dur:0.52,active:[0.10,0.30],dmg:9.0,power:10.5,up:0.95,reach:1.9,radius:1.55,charge:12,cd:6.0,label:'旋风',key:'s2'},
   ult:{dur:0.95,active:[0.22,0.55],dmg:20.0,power:17.0,up:0.85,reach:2.7,radius:2.7,charge:0,cd:0,label:'大招',key:'ult'}
 };
 var ULT_MAX=100;
+var AI_SPEED=0.90;    // AI 移速倍率（初始的 90%）
+var AI_WHIFF=0.05;    // AI 出招挥空概率
 
 /* ================= 渲染基础 ================= */
 var canvas=D.getElementById('c');
@@ -5151,29 +5177,61 @@ W.addEventListener('blur',function(){ keys={}; });
   W.addEventListener('mousedown',function(e){ if(e.target===cv) return; onDown(e); });
 })();
 
-/* 手机横屏引导 + 尝试锁定横屏 */
+/* 手机横屏引导 + 真正可用的横屏切换（必须由用户点击触发） */
 (function(){
-  var rot=D.getElementById('rotate'), rotSkip=false;
+  var rot=D.getElementById('rotate'), rotSkip=false, decided=false;
+  var tipEl=D.getElementById('rotTip');
+  function isTouchDev(){ return ('ontouchstart' in W)||navigator.maxTouchPoints>0; }
+  function setTip(t){ if(tipEl) tipEl.textContent=t||''; }
+  function check(){
+    if(!decided){ if(rot) rot.classList.remove('on'); return; }   // 选方向之前不弹提示
+    var portrait=W.innerHeight>W.innerWidth;
+    if(rot) rot.classList.toggle('on',!!(isTouchDev()&&portrait&&!rotSkip));
+  }
+  W.__orientDecided=function(){ decided=true; check(); };
+  W.addEventListener('resize',check);
+  W.addEventListener('orientationchange',function(){ setTimeout(check,150); });
+  check();
+
+  function platformTip(){
+    var ua=navigator.userAgent||'';
+    if(/iPhone|iPad|iPod/.test(ua)){
+      return 'iPhone 不允许网页强制横屏：请从右上角下拉打开控制中心，关掉「方向锁定」，再把手机横过来。';
+    }
+    return '系统没有允许旋转：请打开手机的「自动旋转」开关（或在通知栏里关掉方向锁定），再把手机横过来。';
+  }
+
+  /* 全屏 + 锁定横屏；两个 API 都必须在点击事件里调用才有效 */
+  function enterLandscape(){
+    if(!isTouchDev()) return;
+    var de=D.documentElement, fs=null;
+    try{ if(de.requestFullscreen) fs=de.requestFullscreen(); }catch(e){}
+    function lock(){
+      try{
+        if(screen.orientation&&screen.orientation.lock){
+          var pr=screen.orientation.lock('landscape');
+          if(pr&&pr.catch) pr.catch(function(){});
+        }
+      }catch(e){}
+    }
+    if(fs&&fs.then) fs.then(function(){ setTimeout(lock,120); }, function(){ lock(); });
+    else lock();
+    setTimeout(function(){
+      if(W.innerWidth>W.innerHeight){ setTip(''); rot.classList.remove('on'); }
+      else setTip(platformTip());
+      check();
+    },750);
+  }
+  W.__enterLandscape=function(){ enterLandscape(); };
+  W.__rotForcePortrait=function(){ rotSkip=true; rot.classList.remove('on'); };
+
+  var rl=D.getElementById('rotLand');
+  if(rl) rl.addEventListener('click',function(e){ e.stopPropagation(); enterLandscape(); });
   var skipEl=D.getElementById('rotSkip');
   if(skipEl) skipEl.addEventListener('click',function(e){
     e.stopPropagation(); rotSkip=true; rot.classList.remove('on');
   });
-  function isTouchDev(){ return ('ontouchstart' in W)||navigator.maxTouchPoints>0; }
-  function check(){
-    var portrait=W.innerHeight>W.innerWidth;
-    if(rot) rot.classList.toggle('on',!!(isTouchDev()&&portrait&&!rotSkip));
-  }
-  W.addEventListener('resize',check);
-  W.addEventListener('orientationchange',function(){ setTimeout(check,150); });
-  check();
-  W.__tryLandscape=function(){
-    if(!isTouchDev()) return;
-    var el=D.documentElement;
-    try{ if(el.requestFullscreen&&!D.fullscreenElement) el.requestFullscreen().catch(function(){}); }catch(e){}
-    setTimeout(function(){
-      try{ if(screen.orientation&&screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){}); }catch(e){}
-    },350);
-  };
+  W.__tryLandscape=function(){ enterLandscape(); };
 })();
 
 function readHumanInput(){
@@ -5265,6 +5323,7 @@ function startAttack(p,type){
   else if(type==='s2'){ if(p.cd2>0) return; p.cd2=mv.cd; }
   else if(type==='ult'){ if((p.ult||0)<ULT_MAX) return; p.ult=0; }
   p.attack={type:type,t:0,hit:{},fx:false};
+  if(p._whiff){ p.attack.whiff=true; p._whiff=false; }   // AI 挥空：这一招不判伤害
   p.atkCool=0;
   p._windT=0;
   beep(type==='heavy'?180:(type==='ult'?120:320),0.06,'square',0.05);
@@ -5332,6 +5391,7 @@ function applyHit(att,def,mv,hitPos){
 }
 
 function tryHit(p,mv){
+  if(p.attack&&p.attack.whiff) return;   // 挥空
   var dash=(mv.key==='s1');        // 冲撞是撞过去，判定范围更宽、不看朝向
   var wide=(mv.key==='ult'||mv.key==='s2');
   for(var i=0;i<G.players.length;i++){
@@ -5420,7 +5480,7 @@ function updatePlayer(p,inp,dt){
     if(len>0.05){
       wishX/=len; wishZ/=len;
       p.facing.set(wishX,0,wishZ);
-      var sp=(p.grounded?RUN:AIR_RUN)*(p.spd||1);
+      var sp=(p.grounded?RUN:AIR_RUN)*(p.spd||1)*(p.moveMul||1);
       var acc=p.grounded?14:5.2;
       var k=1-Math.exp(-acc*dt);
       p.vel.x+=(wishX*sp-p.vel.x)*k;
@@ -5575,6 +5635,7 @@ function breakRail(ang,color){
 function aiInput(p,foe,dt){
   var inp={x:0,y:0,jump:false,light:false,heavy:false};
   if(!p.alive||!foe.alive||G.over) return inp;
+  p.moveMul=AI_SPEED;              // AI 移速只有初始的 90%
   p.aiTimer-=dt; p.aiJumpCool=Math.max(0,p.aiJumpCool-dt);
   var dx=foe.pos.x-p.pos.x, dz=foe.pos.z-p.pos.z;
   var dist=Math.hypot(dx,dz)||0.001;
@@ -5594,6 +5655,7 @@ function aiInput(p,foe,dt){
   if(dist>1.6||r>ARENA_R-2.0){ inp.x=goalX; inp.y=-goalZ; }
 
   if(dist<1.9&&p.atkCool<=0&&p.hitstun<=0){
+    if(Math.random()<AI_WHIFF) p._whiff=true;      // AI 有 5% 概率出招挥空
     if(Math.random()<0.34){ inp.light=true; p.atkCool=0.9; }
     else { inp.heavy=true; p.atkCool=1.35; }
   }
@@ -5684,7 +5746,7 @@ function resetMatch(){
     p.mesh.rotation.set(0,0,0);
     if(!p.blob.parent) scene.add(p.blob);
   });
-  el.hint.textContent='WASD 移动 · 空格 跳跃(二段) · J 轻击 · K 重击';
+  el.hint.textContent='WASD 移动 · 空格 跳跃(二段) · J 普通攻击 · K 重击';
   updateHUD();
 }
 /* ================= 界面流程 ================= */
@@ -5695,7 +5757,7 @@ var menuCam={angle:0.7};
 
 function showScreen(name){
   S.screen=name;
-  ['intro','menu','select','result'].forEach(function(k){
+  ['orient','intro','menu','select','result'].forEach(function(k){
     var el2=D.getElementById('scr-'+k);
     if(el2) el2.classList.toggle('on',k===name);
   });
@@ -5756,6 +5818,7 @@ function layoutSelect(){
 
 function startFight(){
   G.aiEnabled=(S.mode!=='versus');
+  p1.moveMul=1; p2.moveMul=(S.mode==='versus')?1:AI_SPEED; p2._whiff=false;
   resetMatch();
   applyCharacter(p1,S.p1); applyCharacter(p2,S.p2);
   D.getElementById('hud').querySelector('.side.left .name').textContent='P1 · '+CHARACTERS[S.p1].name;
@@ -5763,7 +5826,7 @@ function startFight(){
     (S.mode==='versus'?'P2 · '+CHARACTERS[S.p2].name:'P2 · '+CHARACTERS[S.p2].name);
   D.getElementById('hint').textContent = (S.mode==='versus')
     ? 'P1: WASD 空格 J/K · L冲撞 U旋风 I大招　|　P2: 方向键 Enter ,/.'
-    : 'WASD 空格 · 左键轻击 右键重击 · L冲撞 U旋风 · I大招(打人充能)';
+    : 'WASD 空格 · 左键普通攻击 右键重击 · L冲撞 U旋风 · I大招(打人充能)';
   showScreen('fight');
   G.running=true;
   beep(520,0.12,'sine',0.08);
@@ -5805,12 +5868,36 @@ var introLeft=false;
 function leaveIntro(){
   if(S.screen!=='intro') return;
   introLeft=true; audio();
-  if(W.__tryLandscape) W.__tryLandscape();   // 手机上顺手申请全屏+横屏
   showScreen('menu');
 }
 D.getElementById('scr-intro').addEventListener('click',leaveIntro);
 W.addEventListener('keydown',function(){ if(S.screen==='intro') leaveIntro(); });
-setTimeout(function(){ if(S.screen==='intro') leaveIntro(); },4600);
+
+function armIntroTimer(){
+  setTimeout(function(){ if(S.screen==='intro') leaveIntro(); },4600);
+}
+
+/* 触屏设备先选方向：点「横屏」是真的用户手势，全屏 + 锁横屏才生效 */
+(function(){
+  var isTouch=(('ontouchstart' in W)||navigator.maxTouchPoints>0);
+  var tipEl=D.getElementById('orientTip');
+  function go(kind){
+    if(W.__orientDecided) W.__orientDecided();
+    if(kind==='port'&&W.__rotForcePortrait) W.__rotForcePortrait();
+    showScreen('intro'); armIntroTimer();
+    if(kind==='land'){
+      if(tipEl) tipEl.textContent='正在申请全屏横屏…';
+      if(W.__enterLandscape) W.__enterLandscape();
+    }
+  }
+  if(isTouch){
+    showScreen('orient');
+    D.getElementById('btnLand').addEventListener('click',function(){ audio(); go('land'); });
+    D.getElementById('btnPort').addEventListener('click',function(){ audio(); go('port'); });
+  } else {
+    armIntroTimer();
+  }
+})();
 
 /* ================= 菜单相机 ================= */
 function updateMenuCam(rdt){
