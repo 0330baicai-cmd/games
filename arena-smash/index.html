@@ -271,6 +271,18 @@
   .intro-tip{margin-top:18px}
   #resTitle{font-size:30px}
 }
+/* ===== 语言切换 ===== */
+.lang-pick{position:absolute;bottom:8vh;left:0;right:0;display:flex;gap:10px;justify-content:center;z-index:4}
+.lang-mini{position:absolute;top:14px;right:14px;display:flex;gap:6px;z-index:6}
+.lang-chip{pointer-events:auto;cursor:pointer;padding:8px 18px;border-radius:999px;
+  background:rgba(10,18,34,.78);border:1px solid rgba(120,180,255,.30);color:#a9c2dd;
+  font-family:inherit;font-size:13px;letter-spacing:.06em;transition:.18s}
+.lang-chip.on{background:rgba(80,190,255,.22);border-color:#5fc8ff;color:#eaf7ff;
+  box-shadow:0 0 16px rgba(80,190,255,.35)}
+.lang-mini .lang-chip{padding:5px 12px;font-size:12px}
+.menu-foot{color:#cfe0f6;text-shadow:0 2px 10px #000,0 0 22px rgba(0,0,0,.92);
+  width:86vw;max-width:760px;white-space:normal;word-break:break-word;text-align:center;line-height:1.5}
+@media (max-width:900px){ .lang-pick{bottom:12vh} .lang-chip{padding:7px 16px;font-size:12px} }
 </style>
 </head>
 <body>
@@ -308,34 +320,32 @@
 </div>
 
 <div id="ui">
-  <section class="screen" id="scr-orient">
-    <div class="menu-h">先选个方向</div>
-    <div class="orient">
-      <button class="obtn" id="btnLand"><b>横屏游玩</b><span>推荐 · 画面更大，按键更好按</span></button>
-      <button class="obtn obtn-ghost" id="btnPort"><b>竖屏游玩</b><span>单手也能玩</span></button>
-    </div>
-    <div class="menu-foot" id="orientTip">选横屏会自动申请全屏并锁定横屏</div>
-  </section>
-
   <section class="screen on" id="scr-intro">
     <div class="beam"></div>
-    <div class="intro-title"><span>圆</span><span>环</span><span>大</span><span>乱</span><span>斗</span></div>
+    <div class="intro-title" id="introTitle"><span>圆</span><span>环</span><span>大</span><span>乱</span><span>斗</span></div>
     <div class="intro-sub">ARENA SMASH</div>
-    <div class="intro-tip">点击任意处 / 按任意键 <b>继续</b></div>
+    <div class="intro-tip" id="introTip">点击任意处 / 按任意键 <b>继续</b></div>
+    <div class="lang-pick" id="langPick">
+      <button class="lang-chip on" data-lang="zh">中文</button>
+      <button class="lang-chip" data-lang="en">English</button>
+    </div>
   </section>
 
   <section class="screen" id="scr-menu">
-    <div class="menu-h">选择模式</div>
-    <div class="modes">
-      <button class="mode" data-mode="solo"><b>单人挑战</b><span>你 vs 电脑 · 左键普通攻击 右键重击 · L冲撞 U旋风 I大招</span></button>
-      <button class="mode" data-mode="versus"><b>双人对战</b><span>同一键盘 · P1: WASD+JKL · P2: 方向键 + 逗号 句号</span></button>
-      <button class="mode" data-mode="watch"><b>电脑观战</b><span>AI 打 AI，随机角色</span></button>
+    <div class="lang-mini" id="langMini">
+      <button class="lang-chip on" data-lang="zh">中</button>
+      <button class="lang-chip" data-lang="en">EN</button>
     </div>
-    <div class="menu-foot">3 条命 · 100% 起有 10% 概率一击打飞出场，每多 10% 击飞值 +5% 概率</div>
+    <div class="menu-h" id="menuH">选择模式</div>
+    <div class="modes">
+      <button class="mode" data-mode="solo"><b id="mSoloT">单人挑战</b><span id="mSoloS">你 vs 电脑 · 左键普通攻击 右键重击 · L冲撞 U旋风 I大招</span></button>
+      <button class="mode" data-mode="versus"><b id="mVersT">双人对战</b><span id="mVersS">同一键盘 · P1: WASD+JKL · P2: 方向键 + 逗号 句号</span></button>
+    </div>
+    <div class="menu-foot" id="menuFoot">3 条命 · 100% 起有 10% 概率一击打飞出场，每多 10% 击飞值 +5% 概率</div>
   </section>
 
   <section class="screen" id="scr-select">
-    <div class="sel-head"><div id="selWho">P1 选择角色</div><div class="picked" id="selPicked"></div></div>
+    <div class="sel-head"><div id="selWho">选择角色 · 点卡片</div><div class="picked" id="selPicked"></div></div>
     <div class="grid" id="charGrid"></div>
     <div class="sel-foot"><button class="ghost" id="btnBack">返回</button><button id="btnGo">开始对战</button></div>
   </section>
@@ -349,21 +359,6 @@
 
 <div id="err"></div>
 <div id="flash"></div>
-<div id="rotate">
-  <svg viewBox="0 0 24 24" fill="none" stroke="#8fd6ff" stroke-width="1.6" stroke-linecap="round">
-    <rect x="7" y="3" width="10" height="18" rx="2"/>
-    <path d="M12 18.5h.01"/>
-  </svg>
-  <div>请把手机横过来玩</div>
-  <div style="font-size:12px;color:#7f96b8">横屏画面更大、按钮更好按</div>
-  <div style="display:flex;gap:10px;margin-top:18px">
-    <button id="rotLand" style="padding:9px 18px;border-radius:999px;font-size:13px;
-      background:rgba(90,190,255,.24);border:1px solid rgba(120,210,255,.7);color:#eaf7ff">横屏全屏</button>
-    <button id="rotSkip" style="padding:9px 18px;border-radius:999px;font-size:13px;
-      background:rgba(140,200,255,.08);border:1px solid rgba(140,200,255,.3);color:#a9c2dd">竖屏也能玩</button>
-  </div>
-  <div id="rotTip" style="font-size:11px;color:#6f86a8;margin-top:12px;max-width:250px;text-align:center;line-height:1.6"></div>
-</div>
 
 <script>/**
  * @license
@@ -4892,19 +4887,21 @@ var BASES={};
 var MODEL_YAW=0;
 
 var CHARACTERS=[
-  {id:'c1', name:'青岚',   base:'robot',    color:0x35d0ff, weight:1.00, spd:1.00, jump:1.00, dmg:1.00, tag:'均衡'},
-  {id:'c2', name:'赤刃',   base:'robot',    color:0xff5a3c, weight:1.12, spd:0.95, jump:1.00, dmg:1.16, tag:'重击'},
-  {id:'c3', name:'疾风',   base:'robot',    color:0xffc93c, weight:0.88, spd:1.16, jump:1.08, dmg:0.92, tag:'高速'},
-  {id:'c4', name:'玄铁',   base:'robot',    color:0x9a6bff, weight:1.32, spd:0.90, jump:0.94, dmg:1.10, tag:'重装'},
-  {id:'c5', name:'翠羽',   base:'robot',    color:0x63f0b0, weight:0.95, spd:1.05, jump:1.20, dmg:0.95, tag:'跳跃'},
-  {id:'c6', name:'白鸦',   base:'xbot',     color:0xdfe8ff, weight:1.00, spd:1.08, jump:1.02, dmg:1.00, tag:'灵巧'},
-  {id:'c7', name:'黑曜',   base:'xbot',     color:0x39466b, weight:1.14, spd:0.96, jump:1.00, dmg:1.12, tag:'强攻'},
-  {id:'c8', name:'绿营',   base:'soldier',  color:0x7d9a4e, weight:1.10, spd:0.98, jump:1.00, dmg:1.06, tag:'稳重'},
-  {id:'c9', name:'沙鹰',   base:'soldier',  color:0xc9a06a, weight:1.06, spd:1.02, jump:1.00, dmg:1.03, tag:'游击'},
-  {id:'c10',name:'流银',   base:'xbot',     color:0x9fe8ff, weight:0.92, spd:1.14, jump:1.14, dmg:0.92, tag:'轻盈'},
-  {id:'c11',name:'熔核',   base:'xbot',     color:0xff8a3c, weight:1.08, spd:1.02, jump:1.00, dmg:1.14, tag:'爆发'},
-  {id:'c12',name:'赤霞',   base:'soldier',  color:0xe0577a, weight:0.98, spd:1.10, jump:1.10, dmg:0.98, tag:'灵活'}
+  {id:'c1', name:'青岚', nameEn:'Qinglan', base:'robot',    color:0x35d0ff, weight:1.00, spd:1.00, jump:1.00, dmg:1.00, tag:'均衡', tagEn:'Balanced'},
+  {id:'c2', name:'赤刃', nameEn:'Chiren',  base:'robot',    color:0xff5a3c, weight:1.12, spd:0.95, jump:1.00, dmg:1.16, tag:'重击', tagEn:'Heavy'},
+  {id:'c3', name:'疾风', nameEn:'Jifeng',  base:'robot',    color:0xffc93c, weight:0.88, spd:1.16, jump:1.08, dmg:0.92, tag:'高速', tagEn:'Swift'},
+  {id:'c4', name:'玄铁', nameEn:'Xuantie', base:'robot',    color:0x9a6bff, weight:1.32, spd:0.90, jump:0.94, dmg:1.10, tag:'重装', tagEn:'Tank'},
+  {id:'c5', name:'翠羽', nameEn:'Cuiyu',   base:'robot',    color:0x63f0b0, weight:0.95, spd:1.05, jump:1.20, dmg:0.95, tag:'跳跃', tagEn:'Jumper'},
+  {id:'c6', name:'白鸦', nameEn:'Baiya',   base:'xbot',     color:0xdfe8ff, weight:1.00, spd:1.08, jump:1.02, dmg:1.00, tag:'灵巧', tagEn:'Agile'},
+  {id:'c7', name:'黑曜', nameEn:'Heiyao',  base:'xbot',     color:0x39466b, weight:1.14, spd:0.96, jump:1.00, dmg:1.12, tag:'强攻', tagEn:'Bruiser'},
+  {id:'c8', name:'绿营', nameEn:'Luying',  base:'soldier',  color:0x7d9a4e, weight:1.10, spd:0.98, jump:1.00, dmg:1.06, tag:'稳重', tagEn:'Steady'},
+  {id:'c9', name:'沙鹰', nameEn:'Shaying', base:'soldier',  color:0xc9a06a, weight:1.06, spd:1.02, jump:1.00, dmg:1.03, tag:'游击', tagEn:'Skirmish'},
+  {id:'c10',name:'流银', nameEn:'Liuyin',  base:'xbot',     color:0x9fe8ff, weight:0.92, spd:1.14, jump:1.14, dmg:0.92, tag:'轻盈', tagEn:'Light'},
+  {id:'c11',name:'熔核', nameEn:'Ronghe',  base:'xbot',     color:0xff8a3c, weight:1.08, spd:1.02, jump:1.00, dmg:1.14, tag:'爆发', tagEn:'Burst'},
+  {id:'c12',name:'赤霞', nameEn:'Chixia',  base:'soldier',  color:0xe0577a, weight:0.98, spd:1.10, jump:1.10, dmg:0.98, tag:'灵活', tagEn:'Nimble'}
 ];
+function charName(ch){ return LANG==='en' ? ch.nameEn : ch.name; }
+function charTag(ch){ return LANG==='en' ? (ch.tagEn||ch.tag) : ch.tag; }
 
 function mapClips(actions){
   var names=Object.keys(actions);
@@ -5177,63 +5174,6 @@ W.addEventListener('blur',function(){ keys={}; });
   W.addEventListener('mousedown',function(e){ if(e.target===cv) return; onDown(e); });
 })();
 
-/* 手机横屏引导 + 真正可用的横屏切换（必须由用户点击触发） */
-(function(){
-  var rot=D.getElementById('rotate'), rotSkip=false, decided=false;
-  var tipEl=D.getElementById('rotTip');
-  function isTouchDev(){ return ('ontouchstart' in W)||navigator.maxTouchPoints>0; }
-  function setTip(t){ if(tipEl) tipEl.textContent=t||''; }
-  function check(){
-    if(!decided){ if(rot) rot.classList.remove('on'); return; }   // 选方向之前不弹提示
-    var portrait=W.innerHeight>W.innerWidth;
-    if(rot) rot.classList.toggle('on',!!(isTouchDev()&&portrait&&!rotSkip));
-  }
-  W.__orientDecided=function(){ decided=true; check(); };
-  W.addEventListener('resize',check);
-  W.addEventListener('orientationchange',function(){ setTimeout(check,150); });
-  check();
-
-  function platformTip(){
-    var ua=navigator.userAgent||'';
-    if(/iPhone|iPad|iPod/.test(ua)){
-      return 'iPhone 不允许网页强制横屏：请从右上角下拉打开控制中心，关掉「方向锁定」，再把手机横过来。';
-    }
-    return '系统没有允许旋转：请打开手机的「自动旋转」开关（或在通知栏里关掉方向锁定），再把手机横过来。';
-  }
-
-  /* 全屏 + 锁定横屏；两个 API 都必须在点击事件里调用才有效 */
-  function enterLandscape(){
-    if(!isTouchDev()) return;
-    var de=D.documentElement, fs=null;
-    try{ if(de.requestFullscreen) fs=de.requestFullscreen(); }catch(e){}
-    function lock(){
-      try{
-        if(screen.orientation&&screen.orientation.lock){
-          var pr=screen.orientation.lock('landscape');
-          if(pr&&pr.catch) pr.catch(function(){});
-        }
-      }catch(e){}
-    }
-    if(fs&&fs.then) fs.then(function(){ setTimeout(lock,120); }, function(){ lock(); });
-    else lock();
-    setTimeout(function(){
-      if(W.innerWidth>W.innerHeight){ setTip(''); rot.classList.remove('on'); }
-      else setTip(platformTip());
-      check();
-    },750);
-  }
-  W.__enterLandscape=function(){ enterLandscape(); };
-  W.__rotForcePortrait=function(){ rotSkip=true; rot.classList.remove('on'); };
-
-  var rl=D.getElementById('rotLand');
-  if(rl) rl.addEventListener('click',function(e){ e.stopPropagation(); enterLandscape(); });
-  var skipEl=D.getElementById('rotSkip');
-  if(skipEl) skipEl.addEventListener('click',function(e){
-    e.stopPropagation(); rotSkip=true; rot.classList.remove('on');
-  });
-  W.__tryLandscape=function(){ enterLandscape(); };
-})();
-
 function readHumanInput(){
   var x=0,y=0;
   if(keys.KeyA||keys.ArrowLeft) x-=1;
@@ -5368,14 +5308,18 @@ function applyHit(att,def,mv,hitPos){
     k*=1.2;
   }
   if(procKO) k=Math.max(k,26+dmg*0.07);
+  /* 大招霸体：放大的过程中挨打不掉韧、不被打断、击退大幅衰减 */
+  var armor=!!(def.attack&&(def.attack.type==='ult'||def.attack.armor));
+  if(armor) k*=0.22;
   k=Math.min(k,42);
   def.vel.set(dir.x*k,mv.up*k*0.6+3.2,dir.z*k);
   def.grounded=false; def.jumps=1;
-  def.hitstun=procKO?0.35:0.05;
-  def.attack=null;
+  def.hitstun=armor?0:(procKO?0.35:0.05);
+  if(!armor) def.attack=null;
   /* 打到人给发起者充能（大招靠这个攒） */
   att.ult=Math.min(ULT_MAX,(att.ult||0)+(mv.charge||0));
-  G.freeze=0.055+Math.min(0.08,k*0.0025);
+  /* 命中顿帧：命中瞬间整体定格，越重停得越久 */
+  G.freeze=Math.max(G.freeze,0.055+Math.min(0.075,k*0.0024)+(procKO?0.05:0));
   G.shake=Math.min(0.85,(procKO?0.6:0.16)+k*0.012);
   spawnSpark(hitPos,procKO?0xff5a3c:0xffe066,Math.min(procKO?34:22,8+k*0.6),6+k*0.35,0.13);
   spawnSpark(hitPos,att.color,Math.min(16,6+k*0.4),9+k*0.4,0.09);
@@ -5385,7 +5329,7 @@ function applyHit(att,def,mv,hitPos){
   if(procKO){
     beep(520,0.14,'square',0.09); beep(90,0.5,'sawtooth',0.10);
     var hb=D.getElementById('hint');
-    if(hb) hb.textContent='★ K.O. 直接打飞！(' + Math.round(procP*100) + '% 判定)';
+    if(hb) hb.textContent=fmt(T('ko'),{p:Math.round(procP*100)});
     G.bigKo=0.9;
   }
 }
@@ -5423,7 +5367,9 @@ function koPlayer(p){
   beep(60,0.7,'triangle',0.1);
   spawnSpark(p.pos.clone(),0xffffff,30,14,0.18);
   var banner=D.getElementById('hint');
-  banner.textContent=(p===p1?'你':'对手')+'被击飞出场！剩余 '+Math.max(0,p.stocks)+' 条命';
+  banner.textContent = (LANG==='en')
+    ? (p===p1 ? 'You were launched! ' : 'Opponent launched! ') + Math.max(0,p.stocks) + (p.stocks===1?' stock left':' stocks left')
+    : (p===p1?'你':'对手')+'被击飞出场！剩余 '+Math.max(0,p.stocks)+' 条命';
   var myMatch=G.matchId;
   if(p.stocks>0){
     setTimeout(function(){
@@ -5757,7 +5703,7 @@ var menuCam={angle:0.7};
 
 function showScreen(name){
   S.screen=name;
-  ['orient','intro','menu','select','result'].forEach(function(k){
+  ['intro','menu','select','result'].forEach(function(k){
     var el2=D.getElementById('scr-'+k);
     if(el2) el2.classList.toggle('on',k===name);
   });
@@ -5796,9 +5742,11 @@ function refreshSel(){
     var k=+cards[i].dataset.i;
     cards[i].classList.toggle('on', k===S.p1 || (S.mode==='versus'&&k===S.p2));
   }
-  D.getElementById('selWho').textContent = (S.mode==='versus')? ('P'+S.pick+' 选择角色 · 点卡片') : '选择你的角色 · 点卡片';
-  D.getElementById('selPicked').textContent = 'P1 '+CHARACTERS[S.p1].name+'　·　P2 '+
-    (S.mode==='versus'?CHARACTERS[S.p2].name:CHARACTERS[S.p2].name+'（随机）');
+  D.getElementById('selWho').textContent = (S.mode==='versus')? fmt(T('selWhoP'),{n:S.pick}) : T('selWho');
+  var nm2 = S.mode==='versus'
+    ? charName(CHARACTERS[S.p2])
+    : charName(CHARACTERS[S.p2]) + T('pickedR');
+  D.getElementById('selPicked').textContent = fmt(T('picked'),{a:charName(CHARACTERS[S.p1]),b:nm2});
 }
 
 function refreshSelectFigures(){
@@ -5821,12 +5769,10 @@ function startFight(){
   p1.moveMul=1; p2.moveMul=(S.mode==='versus')?1:AI_SPEED; p2._whiff=false;
   resetMatch();
   applyCharacter(p1,S.p1); applyCharacter(p2,S.p2);
-  D.getElementById('hud').querySelector('.side.left .name').textContent='P1 · '+CHARACTERS[S.p1].name;
+  D.getElementById('hud').querySelector('.side.left .name').textContent='P1 · '+charName(CHARACTERS[S.p1]);
   D.getElementById('hud').querySelector('.side.right .name').textContent=
-    (S.mode==='versus'?'P2 · '+CHARACTERS[S.p2].name:'P2 · '+CHARACTERS[S.p2].name);
-  D.getElementById('hint').textContent = (S.mode==='versus')
-    ? 'P1: WASD 空格 J/K · L冲撞 U旋风 I大招　|　P2: 方向键 Enter ,/.'
-    : 'WASD 空格 · 左键普通攻击 右键重击 · L冲撞 U旋风 · I大招(打人充能)';
+    'P2 · '+charName(CHARACTERS[S.p2]);
+  D.getElementById('hint').textContent = (S.mode==='versus') ? T('hintVers') : T('hintSolo');
   showScreen('fight');
   G.running=true;
   beep(520,0.12,'sine',0.08);
@@ -5836,9 +5782,8 @@ function endMatch(winner){
   if(G.over) return;
   G.over=true; G.running=false;
   var t,w;
-  if(S.mode==='versus'){ t=(winner===p1?'P1 获胜':'P2 获胜'); w='再来一局？'; }
-  else if(S.mode==='watch'){ t=(winner===p1?'左侧获胜':'右侧获胜'); w='电脑们打完了。'; }
-  else { t=(winner===p1?'你赢了！':'你被打飞了'); w=(winner===p1?'对手的命被清零，擂台归你。':'换个角色再来一局？'); }
+  if(S.mode==='versus'){ t=(winner===p1?T('p1win'):T('p2win')); w=T('again2'); }
+  else { t=(winner===p1?T('win'):T('lose')); w=(winner===p1?T('winSub'):T('loseSub')); }
   D.getElementById('resTitle').textContent=t;
   D.getElementById('resSub').textContent=w;
   showScreen('result');
@@ -5849,11 +5794,6 @@ D.querySelectorAll('.mode').forEach(function(b){
   b.addEventListener('click',function(){
     S.mode=b.dataset.mode; S.pick=1;
     audio();
-    if(S.mode==='watch'){
-      S.p1=Math.floor(Math.random()*CHARACTERS.length);
-      S.p2=Math.floor(Math.random()*CHARACTERS.length);
-      startFight(); return;
-    }
     if(S.mode==='solo') S.p2=Math.floor(Math.random()*CHARACTERS.length);
     showScreen('select');
     refreshSelectFigures();
@@ -5877,27 +5817,101 @@ function armIntroTimer(){
   setTimeout(function(){ if(S.screen==='intro') leaveIntro(); },4600);
 }
 
-/* 触屏设备先选方向：点「横屏」是真的用户手势，全屏 + 锁横屏才生效 */
-(function(){
-  var isTouch=(('ontouchstart' in W)||navigator.maxTouchPoints>0);
-  var tipEl=D.getElementById('orientTip');
-  function go(kind){
-    if(W.__orientDecided) W.__orientDecided();
-    if(kind==='port'&&W.__rotForcePortrait) W.__rotForcePortrait();
-    showScreen('intro'); armIntroTimer();
-    if(kind==='land'){
-      if(tipEl) tipEl.textContent='正在申请全屏横屏…';
-      if(W.__enterLandscape) W.__enterLandscape();
-    }
+armIntroTimer();
+
+/* ================= 中 / 英 双语 ================= */
+var LANG='zh';
+var TXT={
+  zh:{
+    tip:'点击任意处 / 按任意键 <b>继续</b>',
+    title:['圆','环','大','乱','斗'],
+    menuH:'选择模式',
+    soloT:'单人挑战', soloS:'你 vs 电脑 · 左键普通攻击 右键重击 · L冲撞 U旋风 I大招',
+    versT:'双人对战', versS:'同一键盘 · P1: WASD+JKL · P2: 方向键 + 逗号 句号',
+    foot:'3 条命 · 100% 起 10% 概率一击打飞，每多 10% +5%',
+    selWho:'选择角色 · 点卡片', selWhoP:'P{n} 选择角色 · 点卡片',
+    picked:'P1 {a}　·　P2 {b}', pickedR:'（随机）',
+    back:'返回', go:'开始对战', again:'再来一局', menu:'回到菜单',
+    jump:'跳', light:'普通攻击', heavy:'重击', s1:'冲撞', s2:'旋风', ult:'大招',
+    hintSolo:'WASD 空格 · 左键普通攻击 右键重击 · L冲撞 U旋风 · I大招(打人充能)',
+    hintVers:'P1: WASD 空格 J/K · L冲撞 U旋风 I大招　|　P2: 方向键 Enter ,/.',
+    win:'你赢了！', lose:'你被打飞了', winSub:'对手的命被清零，擂台归你。', loseSub:'换个角色再来一局？',
+    p1win:'P1 获胜', p2win:'P2 获胜', again2:'再来一局？',
+    ko:'★ K.O. 直接打飞！({p}% 判定)'
+  },
+  en:{
+    tip:'Click anywhere / press any key to <b>continue</b>',
+    title:['A','R','E','N','A'],
+    menuH:'SELECT MODE',
+    soloT:'Solo Challenge', soloS:'You vs CPU · Left click attack, Right click heavy · L dash · U spin · I ult',
+    versT:'Local Versus', versS:'Same keyboard · P1: WASD+JKL · P2: Arrows + , .',
+    foot:'3 stocks · 100%+ : 10% instant launch, +5% per extra 10%',
+    selWho:'Pick your fighter · tap a card', selWhoP:'P{n}: pick a fighter',
+    picked:'P1 {a}　·　P2 {b}', pickedR:' (random)',
+    back:'Back', go:'FIGHT', again:'Rematch', menu:'Main menu',
+    jump:'Jump', light:'Attack', heavy:'Heavy', s1:'Dash', s2:'Spin', ult:'ULT',
+    hintSolo:'WASD move · Left click attack, Right click heavy · L dash · U spin · I ult (charges on hit)',
+    hintVers:'P1: WASD + J/K · L dash · U spin · I ult　|　P2: Arrows + Enter + , .',
+    win:'YOU WIN!', lose:'YOU GOT LAUNCHED', winSub:"Your opponent's stocks are gone.", loseSub:'Try another fighter?',
+    p1win:'P1 WINS', p2win:'P2 WINS', again2:'Run it back?',
+    ko:'★ K.O.! Instant launch ({p}% roll)'
   }
-  if(isTouch){
-    showScreen('orient');
-    D.getElementById('btnLand').addEventListener('click',function(){ audio(); go('land'); });
-    D.getElementById('btnPort').addEventListener('click',function(){ audio(); go('port'); });
-  } else {
-    armIntroTimer();
+};
+function T(k){ var t=TXT[LANG]||TXT.zh; return (t[k]!==undefined)?t[k]:TXT.zh[k]; }
+function fmt(s,v){ return String(s).replace(/\{(\w+)\}/g,function(_,k){ return (v&&v[k]!==undefined)?v[k]:''; }); }
+
+function refreshGridText(){
+  for(var i=0;i<gridEl.children.length;i++){
+    var c=gridEl.children[i], ch=CHARACTERS[+c.dataset.i];
+    if(!ch) continue;
+    var nm=c.querySelector('.nm'), st=c.querySelector('.st');
+    if(nm) nm.textContent=charName(ch);
+    if(st) st.textContent=charTag(ch);
   }
-})();
+}
+function applyLang(){
+  D.getElementById('introTitle').innerHTML=T('title').map(function(c){return '<span>'+c+'</span>';}).join('');
+  D.getElementById('introTip').innerHTML=T('tip');
+  D.getElementById('menuH').textContent=T('menuH');
+  D.getElementById('mSoloT').textContent=T('soloT');
+  D.getElementById('mSoloS').textContent=T('soloS');
+  D.getElementById('mVersT').textContent=T('versT');
+  D.getElementById('mVersS').textContent=T('versS');
+  D.getElementById('menuFoot').textContent=T('foot');
+  D.getElementById('btnBack').textContent=T('back');
+  D.getElementById('btnGo').textContent=T('go');
+  D.getElementById('btnAgain').textContent=T('again');
+  D.getElementById('btnMenu').textContent=T('menu');
+  D.getElementById('bJump').textContent=T('jump');
+  D.getElementById('bLight').textContent=T('light');
+  D.getElementById('bHeavy').textContent=T('heavy');
+  D.getElementById('bSkill1').textContent=T('s1');
+  D.getElementById('bSkill2').textContent=T('s2');
+  D.getElementById('bUlt').textContent=T('ult');
+  D.querySelectorAll('.lang-chip').forEach(function(b){ b.classList.toggle('on',b.dataset.lang===LANG); });
+  buildGrid(); refreshGridText(); refreshSel();
+  if(S.screen==='fight') refreshNameLabels();
+}
+function refreshNameLabels(){
+  var L=D.querySelector('#hud .side.left .name'), R=D.querySelector('#hud .side.right .name');
+  if(L) L.textContent='P1 · '+charName(CHARACTERS[S.p1]);
+  if(R) R.textContent='P2 · '+charName(CHARACTERS[S.p2]);
+  var hintEl=D.getElementById('hint');
+  if(hintEl){
+    hintEl.textContent=(S.mode==='versus')?T('hintVers'):T('hintSolo');
+    /* 触屏设备用更短的提示 */
+    if(('ontouchstart' in W)||navigator.maxTouchPoints>0) hintEl.textContent='';
+  }
+}
+D.querySelectorAll('.lang-chip').forEach(function(b){
+  b.addEventListener('click',function(e){
+    e.stopPropagation();
+    LANG=b.dataset.lang;
+    applyLang();
+    beep(660,0.06,'sine',0.05);
+  });
+});
+applyLang();
 
 /* ================= 菜单相机 ================= */
 function updateMenuCam(rdt){
