@@ -5214,7 +5214,7 @@ applyCharacter(p2,1);
 var WEAPONS=[
   {id:'none',   zh:'空手',      en:'Fists',       tag:'近战',      tagEn:'Melee',      color:0x9fb6d6},
   {id:'water',  zh:'水枪',      en:'Water Gun',   tag:'连射·减速',  tagEn:'Rapid + Slow',color:0x4fc3ff,
-     range:7.0, interval:0.167, dmg:3.2, power:3.2, charge:5, spd:26, kind:'bolt', slow:0.25, slowT:0.20},
+     range:7.0, interval:0.167, dmg:3.2, power:0, charge:5, spd:26, kind:'bolt', slow:0.25, slowT:0.20},
   {id:'shotgun',zh:'短霰弹枪',  en:'Shotgun',     tag:'12 发扇形',  tagEn:'12-spread',  color:0xd7e2f0,
      range:4.2, interval:0.80, dmg:3.0, power:3.0, charge:4, spd:30, kind:'pellet', pellets:12, spread:0.42},
   {id:'flame',  zh:'火焰喷射器',en:'Flamethrower',tag:'灼烧',       tagEn:'Burn',       color:0xff8a3c,
@@ -5385,8 +5385,11 @@ function resolveHit(att,def,s,hitPos){
   var armor=!!(def.attack&&(def.attack.type==='ult'||def.attack.armor));
   if(armor) k*=0.22;
   k=Math.min(k,42);
-  def.vel.set(dir.x*k,(s.up||0.35)*k*0.6+3.0,dir.z*k);
-  def.grounded=false; def.jumps=1;
+  if(k>0.02){
+    def.vel.set(dir.x*k,(s.up||0.35)*k*0.6+3.0,dir.z*k);
+    def.grounded=false; def.jumps=1;
+  }
+  /* k<=0：不产生击飞（水枪 / 火焰喷射器） */
   def.hitstun=armor?0:(procKO?0.35:0.05);
   if(!armor) def.attack=null;
   /* 负面状态：减速 / 灼烧 */
