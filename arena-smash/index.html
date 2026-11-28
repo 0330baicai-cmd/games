@@ -5861,6 +5861,50 @@ function tryHit(p,mv){
   }
 }
 
+/* 复活：光柱从外向内收缩，0.5 秒消失 */
+function respawnBeam(p){
+  var beam=new THREE.Mesh(new THREE.CylinderGeometry(0.95,1.25,6.2,34,1,true),
+    new THREE.MeshBasicMaterial({color:0xcfeeff,transparent:true,opacity:0.85,depthWrite:false,
+      side:THREE.DoubleSide,toneMapped:false,blending:THREE.AdditiveBlending}));
+  beam.position.set(p.pos.x,3.1,p.pos.z);
+  scene.add(beam);
+  var ring=new THREE.Mesh(new THREE.RingGeometry(0.80,1.0,42),
+    new THREE.MeshBasicMaterial({color:0xeaf9ff,transparent:true,opacity:0.95,depthWrite:false,
+      side:THREE.DoubleSide,toneMapped:false}));
+  ring.rotation.x=-Math.PI/2; ring.position.set(p.pos.x,0.07,p.pos.z);
+  scene.add(ring);
+  var ring2=new THREE.Mesh(new THREE.RingGeometry(0.80,1.0,42),
+    new THREE.MeshBasicMaterial({color:0x6fd0ff,transparent:true,opacity:0.8,depthWrite:false,
+      side:THREE.DoubleSide,toneMapped:false}));
+  ring2.rotation.x=-Math.PI/2; ring2.position.set(p.pos.x,0.05,p.pos.z);
+  ring2.scale.setScalar(2.2); scene.add(ring2);
+  G.beams=G.beams||[];
+  G.beams.push({beam:beam,ring:ring,ring2:ring2,life:0.5,max:0.5,h:6.2});
+  spawnSpark(new THREE.Vector3(p.pos.x,1.1,p.pos.z),0xbfe9ff,18,6,0.12);
+  beep(540,0.16,'sine',0.05); beep(760,0.12,'sine',0.04);
+}
+
+function updateBeams(dt){
+  if(!G.beams) return;
+  for(var i=G.beams.length-1;i>=0;i--){
+    var b=G.beams[i];
+    b.life-=dt;
+    if(b.life<=0){
+      scene.remove(b.beam); scene.remove(b.ring); scene.remove(b.ring2);
+      G.beams.splice(i,1); continue;
+    }
+    var k=Math.max(0.02,b.life/b.max);
+    /* 光柱：半径由外向内收，柱体始终贴地 */
+    b.beam.scale.set(k,1,k);
+    b.beam.position.y=b.h*0.5*(1-(1-k)*0.0);
+    b.beam.material.opacity=0.85*k;
+    b.ring.scale.setScalar(0.30+1.10*k);
+    b.ring.material.opacity=0.95*k;
+    b.ring2.scale.setScalar(0.25+2.4*k);
+    b.ring2.material.opacity=0.85*k*k;
+  }
+}
+
 function koPlayer(p){
   if(!p.alive) return;
   p.alive=false;
@@ -5880,11 +5924,19 @@ function koPlayer(p){
   if(p.stocks>0){
     setTimeout(function(){
       if(G.over||G.matchId!==myMatch) return;
-      var a=Math.random()*Math.PI*2;
-      p.pos.set(Math.cos(a)*3.4,6.5,Math.sin(a)*3.4);
+      /* 在离对手最远的位置复活 */
+      var foe=(p===p1)?p2:p1;
+      var fx0=foe?foe.pos.x:0, fz0=foe?foe.pos.z:0;
+      if(foe&&!foe.alive){ fx0=0; fz0=0; }
+      var fd=Math.hypot(fx0,fz0);
+      var spawnX, spawnZ;
+      if(fd<0.35){ spawnX=0; spawnZ=ARENA_R*0.78; }        /* 对手在中心：随便挑一侧 */
+      else { spawnX=-fx0/fd*ARENA_R*0.78; spawnZ=-fz0/fd*ARENA_R*0.78; }
+      p.pos.set(spawnX,0,spawnZ);
       p.vel.set(0,0,0);
       p.alive=true; p.mesh.visible=true; p.invuln=1.6; p.hitstun=0;
-      p.grounded=false;
+      p.grounded=true;
+      respawnBeam(p);
     },1100);
   } else {
     setTimeout(function(){ if(G.matchId!==myMatch) return; endMatch(p===p1?p2:p1); },900);
@@ -7002,6 +7054,7 @@ function loop(now){
     updateFlames(dt);
     updateClones(dt);
     updateWaves(dt);
+    updateBeams(dt);
     if(G.statusFx){
       for(var si=G.statusFx.length-1;si>=0;si--){
         var sm=G.statusFx[si];
