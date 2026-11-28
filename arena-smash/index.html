@@ -5405,7 +5405,9 @@ function resolveHit(att,def,s,hitPos){
     def.burnAmt=s.burn||2;
     if(def.burnTick===undefined||def.burnTick>def.burnEvery) def.burnTick=def.burnEvery;
   }
-  att.ult=Math.min(ULT_MAX,(att.ult||0)+(s.charge||0));
+  var _cg=(s.charge||0);
+  if(att&&WEAPONS[att.wep||0]&&WEAPONS[att.wep||0].id==='none') _cg*=2;   // 空手：大招积攒速度翻倍
+  att.ult=Math.min(ULT_MAX,(att.ult||0)+_cg);
   G.freeze=Math.max(G.freeze,0.045+Math.min(0.07,k*0.0022)+(procKO?0.05:0));
   G.shake=Math.min(0.85,(procKO?0.6:0.12)+k*0.01);
   spawnSpark(hitPos,procKO?0xff5a3c:0xffe066,Math.min(procKO?30:18,7+k*0.5),6+k*0.3,0.12);
@@ -5422,7 +5424,7 @@ function resolveHit(att,def,s,hitPos){
 
 /* ---- 弹道 / 特效 ---- */
 G.projs=[];
-function spawnProj(owner,wep,dir,shade){
+function spawnProj(owner,wep,dir,shade,from){
   var col=wep.id==='water'?0x54c8ff:(wep.id==='rocket'?0xffd9a0:0xfff0c0);
   var mesh;
   if(wep.kind==='rocket'){
@@ -5452,7 +5454,7 @@ function spawnProj(owner,wep,dir,shade){
     mesh=new THREE.Mesh(new THREE.SphereGeometry(0.055,6,5),
       new THREE.MeshBasicMaterial({color:col,toneMapped:false}));
   }
-  mesh.position.copy(muzzleOf(owner));
+  mesh.position.copy(from||muzzleOf(owner));
   scene.add(mesh);
   G.projs.push({mesh:mesh,owner:owner,wep:wep,vel:dir.clone().multiplyScalar(wep.spd||28),
     life:(wep.range||6)/(wep.spd||28),meshLife:0.02});
@@ -5639,6 +5641,7 @@ W.addEventListener('keydown',function(e){
   if(e.code==='KeyL'&&p1) p1.bufSkill1=0.15;
   if(e.code==='KeyU'&&p1) p1.bufSkill2=0.15;
   if(e.code==='KeyI'&&p1) p1.bufUlt=0.15;
+  if(e.code==='KeyO'&&p1) p1.bufUltB=0.15;
   if(e.code==='Comma'||e.code==='Numpad1'){ if(p2) p2.bufLight=0.15; }
   if(e.code==='Period'||e.code==='Numpad2'){ if(p2) p2.bufHeavy=0.15; }
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].indexOf(e.code)>=0) e.preventDefault();
@@ -5799,11 +5802,14 @@ function startAttack(p,type){
   else if(type==='ult'){ if((p.ult||0)<ULT_MAX) return; p.ult=0; }
   p.attack={type:type,t:0,hit:{},fx:false};
   if(p._whiff){ p.attack.whiff=true; p._whiff=false; }   // AI 挥空：这一招不判伤害
+  /* 武器专属大招自己结算伤害，屏蔽通用大招的判定圈 */
+  if(type==='ult'&&p._ultKind&&p._ultKind!=='base') p.attack.whiff=true;
   p.atkCool=0;
   p._windT=0;
   beep(type==='heavy'?180:(type==='ult'?120:320),0.06,'square',0.05);
   /* 起手挥击特效：挂在角色身上，空中攻击也会跟着人走 */
   spawnSwing(p,type);
+  if(type==='ult'&&typeof onUltCast==='function') onUltCast(p);
 }
 
 /* 挥击弧：局部坐标，跟随角色（p.vfx 是角色 root 的子节点） */
@@ -5893,6 +5899,7 @@ function updatePlayer(p,inp,dt){
   p.hitstun=Math.max(0,p.hitstun-dt);
   p.bufLight=Math.max(0,(p.bufLight||0)-dt); p.bufHeavy=Math.max(0,(p.bufHeavy||0)-dt);
   p.bufSkill1=Math.max(0,(p.bufSkill1||0)-dt); p.bufSkill2=Math.max(0,(p.bufSkill2||0)-dt); p.bufUlt=Math.max(0,(p.bufUlt||0)-dt);
+  p.bufUltB=Math.max(0,(p.bufUltB||0)-dt);
   p.cd1=Math.max(0,(p.cd1||0)-dt); p.cd2=Math.max(0,(p.cd2||0)-dt);
 
   /* ---- 负面状态：减速（蓝） / 灼烧（红） ---- */
@@ -5921,6 +5928,61 @@ function updatePlayer(p,inp,dt){
     inp={x:Math.sin(p.stunDir||0),y:-Math.cos(p.stunDir||0),jump:false,
          light:false,heavy:false,aimActive:false,aimX:0,aimY:0,fire:false};
     if(Math.random()<dt*20) statusParticle(p,0xb9c3cf);
+  }
+
+  /* ---- 大招衍生状态：顶飞撞墙 / 瞬影突进 / 烈焰风暴 ---- */
+  if(p.carry&&p.carry.t>0){
+    var cw=p.carry; cw.t-=dt;
+    p.vel.set(0,0,0);
+    p.pos.x+=cw.dx*24*dt; p.pos.z+=cw.dz*24*dt;
+    p.mesh.position.copy(p.pos);
+    if(Math.random()<dt*30) statusParticle(p,0xffd08a);
+    var cR=Math.hypot(p.pos.x,p.pos.z);
+    if(cR>=ARENA_R-0.4||cw.t<=0){
+      p.carry=null;
+      var att0=cw.owner;
+      if(att0&&att0.alive) blastAt(att0,p.pos.x,p.pos.z,WEAPONS[2],22,15,true);
+    }
+  }
+  if(p.shadow&&p.shadow.t>0){
+    var sh=p.shadow; sh.t-=dt;
+    p.vel.set(0,0,0);
+    p.pos.x+=sh.dx*34*dt; p.pos.z+=sh.dz*34*dt;
+    p.mesh.position.copy(p.pos);
+    var q=foeOf(p);
+    var dd=q?Math.hypot(q.pos.x-p.pos.x,q.pos.z-p.pos.z):99;
+    if(!sh.hit&&q&&q.alive&&dd<1.15){
+      sh.hit=true; sh.t=0;
+      if(q.percent>=KO_PERCENT){
+        var hint=document.getElementById('hint');
+        if(hint){ hint.textContent=T('exec'); hint.classList.add('ko'); }
+        koPlayer(q);
+      } else {
+        resolveHit(p,q,{dmg:25,power:18,up:0.7,charge:0},new THREE.Vector3(q.pos.x,1.2,q.pos.z));
+      }
+      spawnSpark(new THREE.Vector3(q.pos.x,1.2,q.pos.z),0xbfe9ff,16,8,0.13);
+    }
+    if(sh.t<=0||dd<0.6) p.shadow=null;
+  }
+  if(p.storm>0){
+    p.storm-=dt; p.stormTick=(p.stormTick||0)-dt;
+    if(Math.random()<dt*40){
+      var sa=Math.random()*Math.PI*2, sr=1.2+Math.random()*2.6;
+      var fm=new THREE.Mesh(new THREE.SphereGeometry(0.16+Math.random()*0.2,7,6),
+        new THREE.MeshBasicMaterial({color:Math.random()<0.5?0xffb347:0xff6a2a,transparent:true,opacity:0.75,toneMapped:false,depthWrite:false}));
+      fm.position.set(p.pos.x+Math.cos(sa)*sr,0.25+Math.random()*1.2,p.pos.z+Math.sin(sa)*sr);
+      scene.add(fm); fxAdd(fm,{life:0.42,grow:0.5,rise:1.4});
+    }
+    if(p.stormTick<=0){
+      p.stormTick=0.25;
+      var sq=foeOf(p);
+      if(sq&&sq.alive&&Math.hypot(sq.pos.x-p.pos.x,sq.pos.z-p.pos.z)<4.2){
+        sq.percent+=3;
+        sq.burnT=Math.max(sq.burnT||0,0.6); sq.burnAmt=2; sq.burnEvery=0.5;
+        spawnSpark(new THREE.Vector3(sq.pos.x,1.1,sq.pos.z),0xff8a3c,5,3,0.09);
+      }
+    }
+    if(p.storm<=0) p.storm=0;
   }
 
   /* ---- 武器：瞄准 / 0.5s 真空期 / 开火 ---- */
@@ -6000,7 +6062,8 @@ function updatePlayer(p,inp,dt){
     else if(heavyEdge) startAttack(p,'heavy');
     else if(s1Edge) startAttack(p,'s1');
     else if(s2Edge) startAttack(p,'s2');
-    else if(ultEdge) startAttack(p,'ult');
+    else if(ultEdge) castUlt(p,'a');
+    if(p.bufUltB>0){ p.bufUltB=0; castUlt(p,'b'); }
   } else if(p.hitstun>0){
     var drag=1-Math.exp(-1.6*dt);
     p.vel.x-=p.vel.x*drag*0.35; p.vel.z-=p.vel.z*drag*0.35;
@@ -6478,7 +6541,7 @@ var TXT={
     setTitle:'设置', setLangL:'语言', setCodeL:'兑换码', codePh:'请输入兑换码',
     codeOk:'兑换成功！已解锁隐藏武器「彩色」', codeBad:'兑换码无效，请重新输入',
     codeUsed:'这个兑换码已经用过了',
-    hintSolo:'WASD 空格 · 左键普通攻击/开火 右键重击 · L冲撞 U旋风 · I大招(打人充能)',
+    hintSolo:'WASD 空格 · 左键普通攻击/开火 右键重击 · L冲撞 U旋风 · I大招 · 空手时 O 第二大招',
     hintVers:'P1: WASD 空格 J/K · L冲撞 U旋风 I大招　|　P2: 方向键 Enter ,/.',
     win:'你赢了！', lose:'你被打飞了', winSub:'对手的命被清零，擂台归你。', loseSub:'换个角色再来一局？',
     p1win:'P1 获胜', p2win:'P2 获胜', again2:'再来一局？',
@@ -6500,7 +6563,7 @@ var TXT={
     setTitle:'Settings', setLangL:'Language', setCodeL:'Redeem code', codePh:'Enter code',
     codeOk:'Redeemed! Hidden weapon unlocked', codeBad:'Invalid code, try again',
     codeUsed:'This code has already been used',
-    hintSolo:'WASD move · Left click attack/fire, Right click heavy · L dash · U spin · I ult (charges on hit)',
+    hintSolo:'WASD move · LMB attack/fire, RMB heavy · L dash · U spin · I ult · fists: O 2nd ult',
     hintVers:'P1: WASD + J/K · L dash · U spin · I ult　|　P2: Arrows + Enter + , .',
     win:'YOU WIN!', lose:'YOU GOT LAUNCHED', winSub:"Your opponent's stocks are gone.", loseSub:'Try another fighter?',
     p1win:'P1 WINS', p2win:'P2 WINS', again2:'Run it back?',
@@ -6647,6 +6710,212 @@ function updateMenuCam(rdt){
   camera.lookAt(0,1.2,0);
 }
 
+/* ================= 武器专属大招 ================= */
+function foeOf(p){ return (p===p1)?p2:p1; }
+
+function groundWarn(x,z,r,life){
+  var m=new THREE.Mesh(new THREE.RingGeometry(r*0.80,r,32),
+    new THREE.MeshBasicMaterial({color:0xff5a4a,transparent:true,opacity:0.6,depthWrite:false,
+      side:THREE.DoubleSide,toneMapped:false}));
+  m.rotation.x=-Math.PI/2; m.position.set(x,0.06,z);
+  scene.add(m); fxAdd(m,{life:life||1.2,grow:0,noFade:false});
+  return m;
+}
+
+function blastAt(att,x,z,wep,dmg,power,doStun){
+  var ring=new THREE.Mesh(new THREE.RingGeometry(0.2,0.5,30),
+    new THREE.MeshBasicMaterial({color:0xffb066,transparent:true,opacity:0.9,depthWrite:false,
+      side:THREE.DoubleSide,toneMapped:false}));
+  ring.rotation.x=-Math.PI/2; ring.position.set(x,0.08,z);
+  scene.add(ring); fxAdd(ring,{life:0.5,grow:6.0});
+  spawnSpark(new THREE.Vector3(x,0.7,z),0xffd08a,20,10,0.16);
+  flashScreen('#ffd9a0',0.16); G.shake=Math.min(1.2,G.shake+0.35);
+  beep(95,0.2,'square',0.09);
+  var q=foeOf(att);
+  if(q&&q.alive&&Math.hypot(q.pos.x-x,q.pos.z-z)<((wep&&wep.radius)||2.4)+0.7){
+    resolveHit(att,q,{dmg:(dmg||10),power:(power||8),up:0.8,charge:0,stun:doStun?0.5:undefined},
+      new THREE.Vector3(q.pos.x,1.1,q.pos.z));
+  }
+}
+
+function castUlt(p,slot){
+  if(!p||!p.alive||p.hitstun>0||p.attack) return false;
+  if((p.ult||0)<ULT_MAX) return false;
+  var w=WEAPONS[p.wep||0]||WEAPONS[0];
+  if(slot==='b'&&w.id!=='none') return false;      // 第二大招只给空手
+  p._ultKind=(slot==='b')?'base':(w.id==='none'?'fists':w.id);
+  startAttack(p,'ult');
+  return true;
+}
+
+/* 空手 A：升龙拳（锁头，必中） */
+function ultFists(p){
+  var q=foeOf(p); if(!q||!q.alive) return;
+  var dx=q.pos.x-p.pos.x, dz=q.pos.z-p.pos.z, d=Math.hypot(dx,dz)||1;
+  p.facing.set(dx/d,0,dz/d);
+  p.mesh.rotation.y=Math.atan2(p.facing.x,p.facing.z);
+  var col=new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.95,3.6,12,1,true),
+    new THREE.MeshBasicMaterial({color:0xffe08a,transparent:true,opacity:0.45,depthWrite:false,
+      side:THREE.DoubleSide,toneMapped:false}));
+  col.position.set(p.pos.x,1.8,p.pos.z); scene.add(col); fxAdd(col,{life:0.42,grow:0.35});
+  setTimeout(function(){
+    if(!p.alive||!q.alive||G.over) return;
+    if(Math.hypot(q.pos.x-p.pos.x,q.pos.z-p.pos.z)>5.0) return;   // 太远只放特效
+    q.hitstun=Math.max(q.hitstun,0.5);
+    resolveHit(p,q,{dmg:18,power:16,up:1.9,charge:0},new THREE.Vector3(q.pos.x,1.5,q.pos.z));
+    spawnSpark(new THREE.Vector3(q.pos.x,1.7,q.pos.z),0xffe08a,18,9,0.14);
+    flashScreen('#fff0c0',0.3); G.shake=Math.min(1.3,G.shake+0.5);
+  },110);
+}
+
+/* 水枪 B：潮汐涌浪（把贴脸的人推得很远） */
+function ultTide(p){
+  [0,1,2].forEach(function(i){
+    var rg=new THREE.Mesh(new THREE.RingGeometry(0.4,0.72,44),
+      new THREE.MeshBasicMaterial({color:i===0?0x3fb8ff:0x8fe4ff,transparent:true,opacity:0.75,
+        depthWrite:false,side:THREE.DoubleSide,toneMapped:false}));
+    rg.rotation.x=-Math.PI/2; rg.position.set(p.pos.x,0.06+i*0.03,p.pos.z);
+    scene.add(rg); fxAdd(rg,{life:0.7,grow:7.5});
+  });
+  G.shake=Math.min(1,G.shake+0.3); beep(220,0.22,'sine',0.08);
+  var q=foeOf(p); if(!q||!q.alive) return;
+  var dx=q.pos.x-p.pos.x, dz=q.pos.z-p.pos.z, d=Math.hypot(dx,dz)||1;
+  if(d<5.0){
+    q.vel.x=dx/d*22; q.vel.z=dz/d*22; q.vel.y=Math.max(q.vel.y,5.0);
+    q.slowT=1.8; q.slowAmt=0.4;
+    resolveHit(p,q,{dmg:5,power:0,up:0.2,charge:6,slow:0.4,slowT:1.8},new THREE.Vector3(q.pos.x,1.1,q.pos.z));
+    q.vel.x=dx/d*22; q.vel.z=dz/d*22; q.vel.y=Math.max(q.vel.y,5.0);
+  }
+}
+
+/* 短霰弹枪 B：爆裂独头弹（锁头 → 顶着对手撞墙 → 爆炸 + 震荡） */
+function ultSlug(p){
+  var q=foeOf(p); if(!q||!q.alive) return;
+  var dx=q.pos.x-p.pos.x, dz=q.pos.z-p.pos.z, d=Math.hypot(dx,dz)||1;
+  if(d>9.5) return;
+  p.facing.set(dx/d,0,dz/d);
+  p.mesh.rotation.y=Math.atan2(p.facing.x,p.facing.z);
+  resolveHit(p,q,{dmg:8,power:2,up:0.1,charge:8},new THREE.Vector3(q.pos.x,1.1,q.pos.z));
+  q.carry={dx:dx/d,dz:dz/d,t:1.7,owner:p};
+  q.hitstun=Math.max(q.hitstun,0.35);
+  beep(150,0.16,'square',0.09);
+}
+
+/* 火焰 A：烈焰风暴（周身火环持续灼烧） */
+function ultStorm(p){
+  p.storm=1.25; p.stormTick=0;
+  beep(170,0.3,'sawtooth',0.07);
+  var core=new THREE.Mesh(new THREE.CylinderGeometry(1.6,3.2,1.4,20,1,true),
+    new THREE.MeshBasicMaterial({color:0xff8a3c,transparent:true,opacity:0.22,depthWrite:false,
+      side:THREE.DoubleSide,toneMapped:false}));
+  core.position.set(p.pos.x,1.0,p.pos.z); scene.add(core); fxAdd(core,{life:0.5,grow:1.6});
+}
+
+/* 小刀 A：瞬影斩（锁头突进；目标 ≥100% 直接斩杀） */
+function ultShadow(p){
+  var q=foeOf(p); if(!q||!q.alive) return;
+  var dx=q.pos.x-p.pos.x, dz=q.pos.z-p.pos.z, d=Math.hypot(dx,dz)||1;
+  if(d>9.5) return;
+  p.shadow={dx:dx/d,dz:dz/d,t:0.42,hit:false};
+  p.invuln=Math.max(p.invuln||0,0.45);
+  p.facing.set(dx/d,0,dz/d); p.mesh.rotation.y=Math.atan2(p.facing.x,p.facing.z);
+  var trail=new THREE.Mesh(new THREE.PlaneGeometry(0.7,3.4),
+    new THREE.MeshBasicMaterial({color:0xbfe9ff,transparent:true,opacity:0.55,depthWrite:false,
+      side:THREE.DoubleSide,toneMapped:false}));
+  trail.rotation.x=-Math.PI/2; trail.rotation.z=Math.atan2(dx,dz);
+  trail.position.set(p.pos.x,0.9,p.pos.z); scene.add(trail); fxAdd(trail,{life:0.3,grow:1.2});
+  beep(620,0.1,'sine',0.06);
+}
+
+/* 火箭筒 A：饱和轰炸（6 发导弹，落地前地面有圆形预警） */
+function ultBarrage(p){
+  var wep=WEAPONS[5];
+  for(var i=0;i<6;i++){
+    (function(i){
+      setTimeout(function(){
+        if(!p.alive||G.over) return;
+        var q=foeOf(p);
+        var tx=(q&&q.alive)?q.pos.x+(Math.random()-0.5)*1.0:p.pos.x;
+        var tz=(q&&q.alive)?q.pos.z+(Math.random()-0.5)*1.0:p.pos.z;
+        groundWarn(tx,tz,1.9,0.45);
+        setTimeout(function(){
+          if(!p.alive||G.over) return;
+          blastAt(p,tx,tz,wep,9,8,false);
+        },420);
+      },700+i*170);
+    })(i);
+  }
+  beep(120,0.24,'square',0.08);
+}
+
+/* 彩色：万花筒（召唤 2 个本体分身，无敌、不挡子弹、3 秒、输出与本体一致） */
+function ultClones(p){
+  var w=WEAPONS[p.wep||0]||WEAPONS[0];
+  G.clones=G.clones||[];
+  for(var i=0;i<2;i++){
+    var ang=Math.random()*Math.PI*2, rr=2.4+Math.random()*2.8;
+    var grp=new THREE.Group();
+    var cp=THREE.SkeletonUtils.clone(p.figure);
+    cp.traverse(function(o){
+      if(o.isMesh||o.isSkinnedMesh){
+        var m=(o.material&&o.material.clone)?o.material.clone():o.material;
+        if(m){ m.transparent=true; m.opacity=0.55; m.depthWrite=false;
+          if(m.emissive){ m.emissive.setHex(0xff6ad5).multiplyScalar(0.5); } }
+        o.material=m; o.frustumCulled=false;
+      }
+    });
+    grp.add(cp);
+    grp.position.set(Math.cos(ang)*rr,0,Math.sin(ang)*rr);
+    scene.add(grp);
+    G.clones.push({obj:grp,t:3.0,fireT:0.45+i*0.3,owner:p,wep:w});
+    var rg=new THREE.Mesh(new THREE.RingGeometry(0.5,0.95,26),
+      new THREE.MeshBasicMaterial({color:0xff6ad5,transparent:true,opacity:0.6,depthWrite:false,
+        side:THREE.DoubleSide,toneMapped:false}));
+    rg.rotation.x=-Math.PI/2; rg.position.set(grp.position.x,0.07,grp.position.z);
+    scene.add(rg); fxAdd(rg,{life:0.6,grow:3.2});
+  }
+  beep(720,0.22,'sine',0.07); flashScreen('#ff9ad2',0.18);
+}
+
+function updateClones(dt){
+  if(!G.clones) return;
+  for(var i=G.clones.length-1;i>=0;i--){
+    var c=G.clones[i]; c.t-=dt;
+    if(c.t<=0||!c.obj.parent||G.over){
+      if(c.obj.parent) scene.remove(c.obj);
+      G.clones.splice(i,1); continue;
+    }
+    var q=foeOf(c.owner);
+    if(!q||!q.alive) continue;
+    var dx=q.pos.x-c.obj.position.x, dz=q.pos.z-c.obj.position.z;
+    var d=Math.hypot(dx,dz)||1;
+    c.obj.rotation.y=Math.atan2(dx,dz);
+    c.fireT-=dt;
+    if(c.fireT<=0&&d<10){
+      c.fireT=(c.wep.interval||0.5)+0.18;
+      var dir=new THREE.Vector3(dx/d,0,dz/d);
+      var from=new THREE.Vector3(c.obj.position.x,1.05,c.obj.position.z);
+      if(c.wep.kind==='rocket'){
+        for(var k=0;k<2;k++) spawnProj(c.owner,c.wep,dir,0,from);
+      } else if(c.wep.id!=='none'){
+        spawnProj(c.owner,c.wep,dir,0,from);
+      }
+    }
+  }
+}
+
+function onUltCast(p){
+  var k=p._ultKind||'base';
+  if(k==='fists') ultFists(p);
+  else if(k==='water') ultTide(p);
+  else if(k==='shotgun') ultSlug(p);
+  else if(k==='flame') ultStorm(p);
+  else if(k==='knife') ultShadow(p);
+  else if(k==='rocket') ultBarrage(p);
+  else if(k==='chaos') ultClones(p);
+  /* 'base' = 原版旋转大招，判定圈由 MOVES.ult 处理 */
+}
+
 /* ================= 主循环 ================= */
 var lastT=performance.now();
 function loop(now){
@@ -6685,6 +6954,7 @@ function loop(now){
     updateFX(dt);
     updateProj(dt);
     updateFlames(dt);
+    updateClones(dt);
     if(G.statusFx){
       for(var si=G.statusFx.length-1;si>=0;si--){
         var sm=G.statusFx[si];
@@ -6710,7 +6980,8 @@ updateHUD();
 W.__ARENA_SMASH__={G:G,p1:p1,p2:p2,keys:keys,startAttack:startAttack,MOVES:MOVES,rails:rails,resetMatch:resetMatch,endMatch:endMatch,
   applyHit:applyHit,tryHit:tryHit,ultBurst:ultBurst,touch:touch,
   S:S,CHARACTERS:CHARACTERS,applyCharacter:applyCharacter,startFight:startFight,showScreen:showScreen,BASES:BASES,deformedBox:deformedBox,
-  camera:camera,THREE:THREE,WEAPONS:WEAPONS,WEPS:WEPS,attachWeapon:attachWeapon,fireWeapon:fireWeapon,resolveHit:resolveHit,buildWeaponGrid:buildWeaponGrid,ready:true};
+  camera:camera,THREE:THREE,WEAPONS:WEAPONS,WEPS:WEPS,attachWeapon:attachWeapon,fireWeapon:fireWeapon,resolveHit:resolveHit,buildWeaponGrid:buildWeaponGrid,
+  castUlt:castUlt,onUltCast:onUltCast,blastAt:blastAt,ready:true};
 })();
 </script>
 </body>
